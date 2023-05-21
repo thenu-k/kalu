@@ -50,13 +50,24 @@ const render = (currentNode, currentContainer) => {
     const domElement = (currentNode.type === 'TEXT' && currentNode.props.nodeValue)
         ? document.createTextNode(currentNode.props.nodeValue)
         : document.createElement(currentNode.type);
+    //Add any prop properties (which aren't children) to the dom node
+    const checkIsProperty = (keyName) => { return keyName !== 'children'; };
+    Object.keys(currentNode.props) // this function returns an array of the KEYS from the key-value pairs of an object
+        .filter(checkIsProperty) // check if the current KEY is not 'children'
+        .forEach(propertyName => {
+        if (domElement instanceof HTMLElement) { //Cannot assign a property to a text node
+            domElement.setAttribute(propertyName, currentNode.props[propertyName]); // Online sources say to use domElement[key] = value but this does not work in typescript
+        } // The problem is that the setAttribute function works different from the above one. I might need to look into this.
+    });
+    //Recursively create it's children
     (_a = currentNode.props.children) === null || _a === void 0 ? void 0 : _a.map((childNode) => render(childNode, domElement));
+    //Add the current node to the parent dom element
     currentContainer.appendChild(domElement);
 };
 const Kalu = {
     createElement, render
 };
-const newElement = Kalu.createElement('h1', {}, Kalu.createElement('p', {}, 'Hello'));
+const newElement = Kalu.createElement('h1', { ant: 5 }, Kalu.createElement('p', { apple: 'apple' }, 'Hello'));
 const mainContainer = document.querySelector('body');
 if (mainContainer) {
     Kalu.render(newElement, mainContainer);
