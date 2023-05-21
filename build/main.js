@@ -26,6 +26,7 @@ const createElement = (type, props, ...children) => {
     };
 };
 const createTextElement = (text) => {
+    // Note that when creating a text node, it will be nested inside the original parent node. So a p->Hello! tag will come out as p->text->Hello!
     return {
         type: 'TEXT',
         props: {
@@ -34,14 +35,6 @@ const createTextElement = (text) => {
         }
     };
 };
-// let Kalu = {
-//     createElement
-// }
-// const pilotElement = Kalu.createElement(
-//     'section', {id: 'top'}, Kalu.createElement('div', {id: 'hello'}), Kalu.createElement('p', {}, 'This is some text')  
-// )
-// console.log(JSON.stringify(pilotElement))
-// console.log(pilotElement)
 /*
     render Function.
     At the very simplest level, it should take an html node and add our current nodes to its children.

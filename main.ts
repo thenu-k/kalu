@@ -64,6 +64,7 @@ const createElement = (type:string, props:KaluProps, ...children:KaluChildren[])
     }
 }
 const createTextElement = (text:string) => {
+    // Note that when creating a text node, it will be nested inside the original parent node. So a p->Hello! tag will come out as p->text->Hello!
     return {
         type: 'TEXT',
         props: {
@@ -72,15 +73,6 @@ const createTextElement = (text:string) => {
         }
     }
 }
-
-// let Kalu = {
-//     createElement
-// }
-// const pilotElement = Kalu.createElement(
-//     'section', {id: 'top'}, Kalu.createElement('div', {id: 'hello'}), Kalu.createElement('p', {}, 'This is some text')  
-// )
-// console.log(JSON.stringify(pilotElement))
-// console.log(pilotElement)
 
 
 /* 
