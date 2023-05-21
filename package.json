@@ -1,0 +1,22 @@
+{
+  "name": "kalu",
+  "version": "0.0.0",
+  "description": "A frontend framework. Developed by Thenu Kaluarachchi.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thenu-k/kalu.git"
+  },
+  "author": "Thenu Kaluarachchi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thenu-k/kalu/issues"
+  },
+  "homepage": "https://github.com/thenu-k/kalu#readme",
+  "dependencies": {
+    "typescript": "^5.0.4"
+  }
+}
