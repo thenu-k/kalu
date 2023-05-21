@@ -45,32 +45,38 @@ interface KaluNode {
 
 type KaluChildren = KaluNode | string
 
-class Kalu{
-    createElement(type:string, props:object|null, ...children:KaluChildren[]){
-        return {
-            type,
-            props: {
-                ...props,                        // Suppose the initial prop was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
-                children: children.map(child=>  // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
-                    typeof child==='object'
-                    ?  child
-                    : this.createTextElement(child)
-                )
-            }
+const createElement = (type:string, props:object|null, ...children:KaluChildren[]) => {
+    return {
+        type,
+        props: {
+            ...props,                        // Suppose the initial prop was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
+            children: children.map(child=>  // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
+                typeof child==='object'
+                ?  child
+                : createTextElement(child)
+            )
         }
     }
-    createTextElement(text:string){
-        return {
-            type: 'TEXT',
-            props: {
-                nodeValue: text,
-                children: []
-            }
+}
+const createTextElement = (text:string) => {
+    return {
+        type: 'TEXT',
+        props: {
+            nodeValue: text,
+            children: []
         }
     }
 }
 
-const kalu = new Kalu 
-console.log(JSON.stringify(kalu.createElement(
-    'section', {id: 'top'}, kalu.createElement('div', {id: 'hello'}), kalu.createElement('p', null, 'This is some text')
+let Kalu = {
+    createElement
+}
+console.log(JSON.stringify(Kalu.createElement(
+    'section', {id: 'top'}, Kalu.createElement('div', {id: 'hello'}), Kalu.createElement('p', null, 'This is some text')
 )))
+
+
+/* 
+    render Function. 
+    At the very simplest level, it should take an html node and add our current nodes to its children.
+*/

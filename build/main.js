@@ -16,25 +16,29 @@
     - Functional Components
     - Hooks
 */
-class Kalu {
-    createElement(type, props, ...children) {
-        return {
-            type,
-            props: Object.assign(Object.assign({}, props), { children: children.map(child => // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
-                 typeof child === 'object'
-                    ? child
-                    : this.createTextElement(child)) })
-        };
-    }
-    createTextElement(text) {
-        return {
-            type: 'TEXT',
-            props: {
-                nodeValue: text,
-                children: []
-            }
-        };
-    }
-}
-const kalu = new Kalu;
-console.log(JSON.stringify(kalu.createElement('section', { id: 'top' }, kalu.createElement('div', { id: 'hello' }), kalu.createElement('p', null, 'This is some text'))));
+const createElement = (type, props, ...children) => {
+    return {
+        type,
+        props: Object.assign(Object.assign({}, props), { children: children.map(child => // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
+             typeof child === 'object'
+                ? child
+                : createTextElement(child)) })
+    };
+};
+const createTextElement = (text) => {
+    return {
+        type: 'TEXT',
+        props: {
+            nodeValue: text,
+            children: []
+        }
+    };
+};
+let Kalu = {
+    createElement
+};
+console.log(JSON.stringify(Kalu.createElement('section', { id: 'top' }, Kalu.createElement('div', { id: 'hello' }), Kalu.createElement('p', null, 'This is some text'))));
+/*
+    render Function.
+    At the very simplest level, it should take an html node and add our current nodes to its children.
+*/ 
