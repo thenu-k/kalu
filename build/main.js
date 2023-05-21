@@ -20,11 +20,21 @@ class Kalu {
     createElement(type, props, ...children) {
         return {
             type,
-            props: Object.assign(Object.assign({}, props), { // Suppose the initial prop was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
-                children // This uses rest meaning that it'll return an array
-             })
+            props: Object.assign(Object.assign({}, props), { children: children.map(child => // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
+                 typeof child === 'object'
+                    ? child
+                    : this.createTextElement(child)) })
+        };
+    }
+    createTextElement(text) {
+        return {
+            type: 'TEXT',
+            props: {
+                nodeValue: text,
+                children: []
+            }
         };
     }
 }
 const kalu = new Kalu;
-console.log(JSON.stringify(kalu.createElement('div', { id: 'hello' }, { type: 'h1', props: null })));
+console.log(JSON.stringify(kalu.createElement('section', { id: 'top' }, kalu.createElement('div', { id: 'hello' }), kalu.createElement('p', null, 'This is some text'))));
