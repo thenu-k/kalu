@@ -40,12 +40,17 @@
 
 interface KaluNode {
     type: string,
-    props: object|null
+    props: KaluProps
 }
-
+interface KaluProps {
+    nodeValue?: string,
+    children?: never[] | KaluNode[],
+    [key: string] : any
+}
 type KaluChildren = KaluNode | string
 
-const createElement = (type:string, props:object|null, ...children:KaluChildren[]) => {
+
+const createElement = (type:string, props:KaluProps, ...children:KaluChildren[]) => {
     return {
         type,
         props: {
@@ -68,15 +73,41 @@ const createTextElement = (text:string) => {
     }
 }
 
-let Kalu = {
-    createElement
-}
-console.log(JSON.stringify(Kalu.createElement(
-    'section', {id: 'top'}, Kalu.createElement('div', {id: 'hello'}), Kalu.createElement('p', null, 'This is some text')
-)))
+// let Kalu = {
+//     createElement
+// }
+// const pilotElement = Kalu.createElement(
+//     'section', {id: 'top'}, Kalu.createElement('div', {id: 'hello'}), Kalu.createElement('p', {}, 'This is some text')  
+// )
+// console.log(JSON.stringify(pilotElement))
+// console.log(pilotElement)
 
 
 /* 
     render Function. 
     At the very simplest level, it should take an html node and add our current nodes to its children.
+    The render function will be recursive as you'll see in the next few lines.
+    We'll first provide the top-parent level node and it'll:
+    a) create a domElement to the specs of this node
+    b) creates a child node recursively
+    If the child node is a text node (this also means that the parent node only contained text - unorthodox but it's how it works)
+    then a text node will be created. 
 */
+
+const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
+    const domElement = (currentNode.type==='TEXT'&&currentNode.props.nodeValue)
+    ? document.createTextNode(currentNode.props.nodeValue)
+    : document.createElement(currentNode.type)
+    currentNode.props.children?.map((childNode) => render(childNode, domElement))
+    currentContainer.appendChild(domElement)
+}
+
+const Kalu = {
+    createElement, render
+}
+
+const newElement = Kalu.createElement('h1', {}, Kalu.createElement('p', {}, 'Hello'))
+const mainContainer = document.querySelector('body')
+if(mainContainer){
+    Kalu.render(newElement, mainContainer)
+}
