@@ -55,7 +55,7 @@ const createElement = (type:string, props:KaluProps, ...children:KaluChildren[])
         type,
         props: {
             ...props,                        // Suppose the initial prop was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
-            children: children.map(child=>  // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
+            children: children.map(child=>   // This uses rest meaning that it'll return an array. Suppose ...children is empty, then the function won't be called and you'll get []
                 typeof child==='object'
                 ?  child
                 : createTextElement(child)
@@ -64,7 +64,6 @@ const createElement = (type:string, props:KaluProps, ...children:KaluChildren[])
     }
 }
 const createTextElement = (text:string) => {
-    // Note that when creating a text node, it will be nested inside the original parent node. So a p->Hello! tag will come out as p->text->Hello!
     return {
         type: 'TEXT',
         props: {
@@ -84,6 +83,7 @@ const createTextElement = (text:string) => {
     b) creates a child node recursively
     If the child node is a text node (this also means that the parent node only contained text - unorthodox but it's how it works)
     then a text node will be created. 
+    ^^ NOT TRUE ANYMORE. I don't know how or why but the text element no longer appears in Text Nodes.
 */
 
 const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
@@ -91,14 +91,13 @@ const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
     ? document.createTextNode(currentNode.props.nodeValue)
     : document.createElement(currentNode.type)
 
-    //Add any prop properties (which aren't children) to the dom node
-    const checkIsProperty = (keyName:string) => {return keyName !=='children'}
-    Object.keys(currentNode.props)  // this function returns an array of the KEYS from the key-value pairs of an object
-    .filter(checkIsProperty)        // check if the current KEY is not 'children'
+    const checkIsProperty = (keyName:string) => {return keyName !=='children'}             //Add any prop properties (which aren't children) to the dom node
+    Object.keys(currentNode.props)                                                         //This function returns an array of the KEYS from the key-value pairs of an object
+    .filter(checkIsProperty)                                                               //Check if the current KEY is not 'children'
     .forEach(propertyName=> {
         if(domElement instanceof HTMLElement){                                             //Cannot assign a property to a text node
-            domElement.setAttribute(propertyName, currentNode.props[propertyName])         // Online sources say to use domElement[key] = value but this does not work in typescript
-        }                                                                                  // The problem is that the setAttribute function works different from the above one. I might need to look into this.
+            domElement.setAttribute(propertyName, currentNode.props[propertyName])         //Online sources say to use domElement[key] = value but this does not work in typescript
+        }                                                                                  //The problem is that the setAttribute function works different from the above one. I might need to look into this.
     })
 
     //Recursively create it's children
@@ -106,6 +105,12 @@ const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
     //Add the current node to the parent dom element
     currentContainer.appendChild(domElement)
 }
+
+
+/* 
+    concurrency Logic.
+    
+*/
 
 const Kalu = {
     createElement, render
