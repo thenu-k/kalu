@@ -46,16 +46,16 @@ interface KaluNode {
 
 
 class Kalu{
-    createElement(type:string|null, props:any, ...children:any|null){
+    createElement(type:string|null, props:object, ...children:KaluNode[]){
         return {
             type,
             props: {
-                ...props, // Suppose the initial props was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
-                children  // This uses rest meaning that it'll return a an array
+                ...props, // Suppose the initial prop was given as {A:a, B:b}. This spread syntax will spread those values to give THIS prop a value like {A:a, B:b, children: [...]}
+                children  // This uses rest meaning that it'll return an array
             }
         }
     }
 }
 
 const kalu = new Kalu 
-kalu.createElement('div')
+console.log(JSON.stringify(kalu.createElement('div', {id: 'hello'}, {type: 'h1', props: null})))
