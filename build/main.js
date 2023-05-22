@@ -45,7 +45,7 @@ const createTextElement = (text) => {
     then a text node will be created.
     ^^ NOT TRUE ANYMORE. I don't know how or why but the text element no longer appears in Text Nodes.
 */
-const render = (currentNode, currentContainer) => {
+const simpleRender = (currentNode, currentContainer) => {
     var _a;
     const domElement = (currentNode.type === 'TEXT' && currentNode.props.nodeValue)
         ? document.createTextNode(currentNode.props.nodeValue)
@@ -59,19 +59,40 @@ const render = (currentNode, currentContainer) => {
         } //The problem is that the setAttribute function works different from the above one. I might need to look into this.
     });
     //Recursively create it's children
-    (_a = currentNode.props.children) === null || _a === void 0 ? void 0 : _a.map((childNode) => render(childNode, domElement));
+    (_a = currentNode.props.children) === null || _a === void 0 ? void 0 : _a.map((childNode) => simpleRender(childNode, domElement));
     //Add the current node to the parent dom element
     currentContainer.appendChild(domElement);
 };
 /*
-    concurrency Logic.
-    
+    concurrency and fiber Logic.
+    We will rewrite the render function taking the above into account.
+    A fiber is just a javascript object and is almost exactly idential to a KaluNode as far as I can tell.
+    Each KaluNode will be a fiber.
+    The reason we're using concurrency/fibers here is that it might take a long time to render out the entire node tree.
+    So we'll start will the TOP LEVEL NODE, then the FIRST CHILD, and then it's children if any, then the FIRST CHILD's siblings, then the ORIGINAL's
+    siblings if any (iow, the FIRST CHILD's UNCLE).
+    We'll be seperating these renders into units of work and we'll use a requestIdleCallback fn which will make sure that the next unit of work
+    only runs when the main thread is free.
+    In the following function, a unit of work is a fiber object.
 */
+let nextUnitOfWork = null;
+const workLoop = (deadLine) => {
+    let shouldYield = false; //When the first run of this workLoop call begins, shouldYield should be false.
+    while (nextUnitOfWork && !shouldYield) { //This loop keeps running until shouldYield becomes true
+        nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+        shouldYield = deadLine.timeRemaining() < 1; //shouldYield becomes true when the time remaining until the thread is required by the broswer is less than 1 (s or ms?)
+    }
+    requestIdleCallback(workLoop);
+};
+requestIdleCallback(workLoop);
+const performUnitOfWork = (nextUnitOfWork) => {
+    //TODO - this should return a fiber object
+};
 const Kalu = {
-    createElement, render
+    createElement
 };
 const newElement = Kalu.createElement('h1', { ant: 5 }, Kalu.createElement('p', { apple: 'apple' }, 'Hello'));
 const mainContainer = document.querySelector('body');
-if (mainContainer) {
-    Kalu.render(newElement, mainContainer);
-}
+// if(mainContainer){
+//     Kalu.simpleRender(newElement, mainContainer)
+// }

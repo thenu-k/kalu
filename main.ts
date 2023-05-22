@@ -86,7 +86,7 @@ const createTextElement = (text:string) => {
     ^^ NOT TRUE ANYMORE. I don't know how or why but the text element no longer appears in Text Nodes.
 */
 
-const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
+const simpleRender = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
     const domElement = (currentNode.type==='TEXT'&&currentNode.props.nodeValue)
     ? document.createTextNode(currentNode.props.nodeValue)
     : document.createElement(currentNode.type)
@@ -101,23 +101,46 @@ const render = (currentNode:KaluNode, currentContainer:HTMLElement|Text) => {
     })
 
     //Recursively create it's children
-    currentNode.props.children?.map((childNode) => render(childNode, domElement))
+    currentNode.props.children?.map((childNode) => simpleRender(childNode, domElement))
     //Add the current node to the parent dom element
     currentContainer.appendChild(domElement)
 }
 
 
 /* 
-    concurrency Logic.
-    
+    concurrency and fiber Logic.
+    We will rewrite the render function taking the above into account.
+    A fiber is just a javascript object and is almost exactly idential to a KaluNode as far as I can tell.
+    Each KaluNode will be a fiber. 
+    The reason we're using concurrency/fibers here is that it might take a long time to render out the entire node tree.
+    So we'll start will the TOP LEVEL NODE, then the FIRST CHILD, and then it's children if any, then the FIRST CHILD's siblings, then the ORIGINAL's
+    siblings if any (iow, the FIRST CHILD's UNCLE).
+    We'll be seperating these renders into units of work and we'll use a requestIdleCallback fn which will make sure that the next unit of work
+    only runs when the main thread is free.
+    In the following function, a unit of work is a fiber object.
 */
 
+let nextUnitOfWork:any = null
+const workLoop = (deadLine:IdleDeadline) => {                                            //I'm guessing that the deadLine argument is auto given to the workLoop function by requestIdleCallback. It's probably a timestamp
+    let shouldYield = false                                                              //When the first run of this workLoop call begins, shouldYield should be false.
+    while (nextUnitOfWork&&!shouldYield){                                                //This loop keeps running until shouldYield becomes true
+        nextUnitOfWork = performUnitOfWork(nextUnitOfWork)                                  
+        shouldYield = deadLine.timeRemaining() < 1                                       //shouldYield becomes true when the time remaining until the thread is required by the broswer is less than 1 (s or ms?)
+    }
+    requestIdleCallback(workLoop)
+}
+requestIdleCallback(workLoop)
+const performUnitOfWork = (nextUnitOfWork:any) => {
+    //TODO - this should return a fiber object
+}
+
+
 const Kalu = {
-    createElement, render
+    createElement
 }
 
 const newElement = Kalu.createElement('h1', {ant: 5}, Kalu.createElement('p', {apple: 'apple'}, 'Hello'))
 const mainContainer = document.querySelector('body')
-if(mainContainer){
-    Kalu.render(newElement, mainContainer)
-}
+// if(mainContainer){
+//     Kalu.simpleRender(newElement, mainContainer)
+// }
